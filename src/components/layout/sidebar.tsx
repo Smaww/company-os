@@ -16,7 +16,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "@/contexts/UserContext";
 
 // ========================================
@@ -53,6 +53,12 @@ export function Sidebar() {
   const router = useRouter();
   const { user, isLoading, isMounted } = useUser();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Track component mount for hydration safety
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // ========================================
   // SECURE LOGOUT - The "Clean Exit"
@@ -101,6 +107,12 @@ export function Sidebar() {
       .substring(0, 2)
       .toUpperCase();
   };
+
+  // User display values - only compute after mount
+  const displayName = mounted && user ? user.name : "";
+  const displayRole = mounted && user ? user.roleLabel : "";
+  const displayInitials = mounted && user ? getInitials(user.name) : "";
+  const showUserContent = mounted && isMounted && !isLoading && user;
 
   return (
     <div className="h-full flex flex-col bg-white">
@@ -190,10 +202,10 @@ export function Sidebar() {
         </button>
       </div>
 
-      {/* User Profile & Logout - SYNCHRONIZED FROM CONTEXT */}
+      {/* User Profile & Logout - HYDRATION SAFE */}
       <div className="p-4 border-t border-gray-100" suppressHydrationWarning>
-        {!isMounted || isLoading ? (
-          // Loading skeleton - same on server and client initially
+        {!showUserContent ? (
+          // Loading skeleton - consistent on server and client
           <div className="flex items-center gap-3 p-3 rounded-xl">
             <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
             <div className="flex-1">
@@ -201,19 +213,24 @@ export function Sidebar() {
               <div className="h-3 bg-gray-100 rounded animate-pulse w-16" />
             </div>
           </div>
-        ) : user ? (
-          <div className="space-y-3">
+        ) : (
+          <div className="space-y-3" suppressHydrationWarning>
             {/* User Info */}
             <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
               <div 
                 className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
                 style={{ background: `linear-gradient(135deg, ${colors.accents.lavender}, #A78BFA)` }}
+                suppressHydrationWarning
               >
-                {getInitials(user.name)}
+                {displayInitials}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-800 text-sm truncate">{user.name}</p>
-                <p className="text-xs text-gray-500 truncate">{user.roleLabel}</p>
+                <p className="font-semibold text-gray-800 text-sm truncate" suppressHydrationWarning>
+                  {displayName}
+                </p>
+                <p className="text-xs text-gray-500 truncate" suppressHydrationWarning>
+                  {displayRole}
+                </p>
               </div>
             </div>
 
@@ -236,7 +253,7 @@ export function Sidebar() {
               )}
             </button>
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

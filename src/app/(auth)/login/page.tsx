@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Lock, Mail, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { appConfig } from "@/lib/config";
 
-export default function LoginPage() {
+// Login Form Component (uses useSearchParams)
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -45,6 +46,103 @@ export default function LoginPage() {
   };
 
   return (
+    <>
+      {/* Success Message */}
+      {registered && (
+        <div className="mb-6 p-4 rounded-xl bg-green-50 border border-green-200 flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+          <span className="text-green-600 text-sm font-medium">تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن</span>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+          <span className="text-red-600 text-sm font-medium">{error}</span>
+        </div>
+      )}
+
+      {/* Login Form */}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            البريد الإلكتروني
+          </label>
+          <div className="relative">
+            <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full pr-12 pl-4 py-4 rounded-xl border border-gray-200 focus:border-gray-400 outline-none text-gray-800"
+              placeholder="email@company.com"
+              required
+              disabled={isLoading}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            كلمة المرور
+          </label>
+          <div className="relative">
+            <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pr-12 pl-4 py-4 rounded-xl border border-gray-200 focus:border-gray-400 outline-none text-gray-800"
+              placeholder="••••••••"
+              required
+              disabled={isLoading}
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full py-4 px-6 rounded-xl font-bold text-white transition-all duration-300 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+          style={{ backgroundColor: appConfig.design_system.colors.accent_primary }}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              جاري تسجيل الدخول...
+            </>
+          ) : (
+            "تسجيل الدخول"
+          )}
+        </button>
+      </form>
+
+      {/* Sign Up Link */}
+      <p className="text-center text-gray-500 mt-6">
+        ليس لديك حساب؟{" "}
+        <Link href="/signup" className="text-gray-800 font-semibold hover:underline">
+          إنشاء حساب جديد
+        </Link>
+      </p>
+    </>
+  );
+}
+
+// Loading Fallback
+function LoginFormSkeleton() {
+  return (
+    <div className="space-y-5 animate-pulse">
+      <div className="h-12 bg-gray-200 rounded-xl"></div>
+      <div className="h-12 bg-gray-200 rounded-xl"></div>
+      <div className="h-14 bg-gray-300 rounded-xl"></div>
+    </div>
+  );
+}
+
+// Main Page Component
+export default function LoginPage() {
+  return (
     <div 
       className="min-h-screen flex items-center justify-center p-6"
       style={{ backgroundColor: appConfig.design_system.colors.bg }}
@@ -70,84 +168,10 @@ export default function LoginPage() {
           <p className="text-gray-500">الرجاء تسجيل الدخول للمتابعة</p>
         </div>
 
-        {/* Success Message */}
-        {registered && (
-          <div className="mb-6 p-4 rounded-xl bg-green-50 border border-green-200 flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
-            <span className="text-green-600 text-sm font-medium">تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن</span>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
-            <span className="text-red-600 text-sm font-medium">{error}</span>
-          </div>
-        )}
-
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              البريد الإلكتروني
-            </label>
-            <div className="relative">
-              <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pr-12 pl-4 py-4 rounded-xl border border-gray-200 focus:border-gray-400 outline-none text-gray-800"
-                placeholder="email@company.com"
-                required
-                disabled={isLoading}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              كلمة المرور
-            </label>
-            <div className="relative">
-              <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pr-12 pl-4 py-4 rounded-xl border border-gray-200 focus:border-gray-400 outline-none text-gray-800"
-                placeholder="••••••••"
-                required
-                disabled={isLoading}
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-4 px-6 rounded-xl font-bold text-white transition-all duration-300 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-            style={{ backgroundColor: appConfig.design_system.colors.accent_primary }}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                جاري تسجيل الدخول...
-              </>
-            ) : (
-              "تسجيل الدخول"
-            )}
-          </button>
-        </form>
-
-        {/* Sign Up Link */}
-        <p className="text-center text-gray-500 mt-6">
-          ليس لديك حساب؟{" "}
-          <Link href="/signup" className="text-gray-800 font-semibold hover:underline">
-            إنشاء حساب جديد
-          </Link>
-        </p>
+        {/* Wrapped in Suspense for useSearchParams */}
+        <Suspense fallback={<LoginFormSkeleton />}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );

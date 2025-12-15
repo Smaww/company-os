@@ -3,18 +3,19 @@
 import { useState } from "react";
 import { MessageCircle, X, Phone, Send } from "lucide-react";
 import { appConfig, type UserRole } from "@/lib/config";
+import { useUser } from "@/contexts/UserContext";
 
 // ========================================
 // EXECUTIVE COMMUNICATIONS WIDGET
 // Floating WhatsApp contact widget
+// Gets current user role from UserContext
 // ========================================
 
-interface ExecutiveCommsProps {
-  currentUserRole: UserRole;
-}
-
-export function ExecutiveComms({ currentUserRole }: ExecutiveCommsProps) {
+export function ExecutiveComms() {
+  const { user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
+
+  const currentUserRole = (user?.role || "GM") as UserRole;
 
   // Get contacts excluding current user's role
   const contacts = Object.entries(appConfig.contacts_registry)

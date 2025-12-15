@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { appConfig } from "@/lib/config";
 import { useUser } from "@/contexts/UserContext";
-import { useTasks } from "@/contexts/DataContext";
+import { useTasks, type Task } from "@/contexts/DataContext";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 // ========================================
@@ -113,7 +113,7 @@ export default function TasksPage() {
       description: task.description || "",
       status: task.status,
       priority: task.priority,
-      assignee: task.assignee || "",
+      assignee: task.assignedTo || "",
       dueDate: task.dueDate || "",
       project: task.project || "",
     });
@@ -321,10 +321,10 @@ export default function TasksPage() {
                       {priorityConfig[task.priority].label}
                     </span>
 
-                    {task.assignee && (
+                    {task.assignedTo && (
                       <span className="flex items-center gap-1 text-xs text-gray-500">
                         <User className="w-3 h-3" />
-                        {task.assignee}
+                        {task.assignedTo}
                       </span>
                     )}
 

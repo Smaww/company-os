@@ -190,8 +190,8 @@ export function ActiveTasksWidget() {
                           {overdue && <AlertCircle className="w-3 h-3" />}
                         </span>
                       )}
-                      {task.assignee && (
-                        <span className="text-xs text-gray-400">• {task.assignee}</span>
+                      {task.assignedTo && (
+                        <span className="text-xs text-gray-400">• {task.assignedTo}</span>
                       )}
                     </div>
                   </div>

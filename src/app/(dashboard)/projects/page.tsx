@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { appConfig } from "@/lib/config";
 import { useUser } from "@/contexts/UserContext";
-import { useProjects } from "@/contexts/DataContext";
+import { useProjects, type Project } from "@/contexts/DataContext";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 // ========================================
