@@ -89,8 +89,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
         phone: sessionUser.phone,
       });
     } else {
-      // Use default user when not authenticated (for development)
-      setUser(defaultUser);
+      // NO FALLBACK - User must be authenticated
+      // Middleware will redirect to /login if not authenticated
+      setUser(null);
     }
     
     setIsLoading(false);

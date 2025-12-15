@@ -57,12 +57,12 @@ export default function Dashboard() {
   }, []);
 
   // Redirect to login if not authenticated (after loading completes)
+  // This is a fallback - middleware should handle this
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && !user) {
-      // Allow viewing with default user for development
-      // router.push("/login");
+    if (mounted && !isLoading && !isAuthenticated) {
+      router.push("/login");
     }
-  }, [isLoading, isAuthenticated, user, router]);
+  }, [mounted, isLoading, isAuthenticated, router]);
 
   // Loading state - show until mounted and user loaded
   if (!mounted || isLoading) {
@@ -76,9 +76,16 @@ export default function Dashboard() {
     );
   }
 
-  // No user data
+  // No user data - show loading (redirect will happen via useEffect)
   if (!user) {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-gray-400 animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">جاري التحقق من الصلاحيات...</p>
+        </div>
+      </div>
+    );
   }
 
   // Get role config
