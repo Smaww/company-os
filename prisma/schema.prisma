@@ -1,0 +1,209 @@
+// ========================================
+// CEO WORKSPACE - DATABASE SCHEMA
+// Version 5.0 - Supabase Production Ready
+// ========================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ========================================
+// USER & AUTHENTICATION
+// ========================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  nameAr        String?
+  role          String    @default("GM") // ADMIN, CHAIRMAN, VP, GM
+  phone         String?
+  avatar        String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  createdProjects  Project[]  @relation("ProjectCreator")
+  assignedProjects ProjectMember[]
+  createdTasks     Task[]     @relation("TaskCreator")
+  assignedTasks    Task[]     @relation("TaskAssignee")
+}
+
+// ========================================
+// EMPLOYEES (HR DIRECTORY)
+// ========================================
+
+model Employee {
+  id            String    @id @default(cuid())
+  name          String
+  nameEn        String?
+  email         String    @unique
+  phone         String?
+  role          String
+  department    String
+  location      String?
+  joinDate      DateTime
+  status        String    @default("active")
+  productivity  Int       @default(0)
+  bio           String?
+  avatar        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  documents     EmployeeDocument[]
+  performance   PerformanceRecord[]
+}
+
+model EmployeeDocument {
+  id          String    @id @default(cuid())
+  name        String
+  type        String
+  url         String?
+  uploadDate  DateTime  @default(now())
+  employeeId  String
+  employee    Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model PerformanceRecord {
+  id          String    @id @default(cuid())
+  period      String
+  score       Int
+  notes       String?
+  createdAt   DateTime  @default(now())
+  employeeId  String
+  employee    Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+// ========================================
+// PROJECTS & TASKS
+// ========================================
+
+model Project {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  client        String?
+  status        String    @default("active")
+  progress      Int       @default(0)
+  startDate     DateTime?
+  deadline      DateTime?
+  budget        Float?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  creatorId     String
+  creator       User      @relation("ProjectCreator", fields: [creatorId], references: [id])
+  members       ProjectMember[]
+  tasks         Task[]
+  blockers      Blocker[]
+}
+
+model ProjectMember {
+  id          String    @id @default(cuid())
+  role        String    @default("member")
+  joinedAt    DateTime  @default(now())
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      String    @default("pending")
+  priority    String    @default("medium")
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creatorId   String
+  creator     User      @relation("TaskCreator", fields: [creatorId], references: [id])
+  assigneeId  String?
+  assignee    User?     @relation("TaskAssignee", fields: [assigneeId], references: [id])
+}
+
+model Blocker {
+  id          String    @id @default(cuid())
+  description String
+  severity    String    @default("medium")
+  resolved    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  resolvedAt  DateTime?
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// ========================================
+// KPIs & ALERTS
+// ========================================
+
+model KPI {
+  id          String    @id @default(cuid())
+  name        String
+  nameAr      String?
+  value       String
+  trend       String?
+  icon        String?
+  color       String?
+  category    String
+  period      String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Alert {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  type        String    @default("info")
+  isRead      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
+
+// ========================================
+// TOOLS REGISTRY (Dynamic)
+// ========================================
+
+model Tool {
+  id          String    @id @default(cuid())
+  name        String
+  url         String
+  icon        String
+  color       String
+  isActive    Boolean   @default(true)
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// ========================================
+// REPORTS & DOCUMENTS
+// ========================================
+
+model Report {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  type        String
+  category    String
+  size        String?
+  fileUrl     String?
+  downloads   Int       @default(0)
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
