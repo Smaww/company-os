@@ -68,12 +68,15 @@ export default function SignUpPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "حدث خطأ");
+        // Use the Arabic details if available, fallback to error
+        const errorMessage = data.details || data.error || "حدث خطأ غير متوقع";
+        throw new Error(errorMessage);
       }
 
-      // Redirect to login
+      // Success - redirect to login with success message
       router.push("/login?registered=true");
     } catch (err) {
+      console.error("Signup error:", err);
       setError(err instanceof Error ? err.message : "حدث خطأ أثناء إنشاء الحساب");
     } finally {
       setIsLoading(false);
